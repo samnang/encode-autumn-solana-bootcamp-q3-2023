@@ -32,12 +32,16 @@ See [transaction](https://explorer.solana.com/tx/4AjWDYcQJdqxCezptbDYBHXAr55akGA
     4. If the count is divisible by 3 and 5 print "fizz buzz"
     5. At the end print the number of times "fizz buzz" occurred.
 
+### Run Program
+
+<details>
+  <summary>Click here to see the program output</summary>
 
 ```sh
 ❯ cargo run
-   Compiling fizzbuzz v0.1.0 (/Users/user/Playground/solana/encode-autumn-solana-bootcamp-q3-2023/day_04/fizzbuzz)
+Compiling fizzbuzz v0.1.0 (/Users/user/Playground/solana/encode-autumn-solana-bootcamp-q3-2023/day_04/fizzbuzz)
     Finished dev [unoptimized + debuginfo] target(s) in 0.41s
-     Running `target/debug/fizzbuzz`
+    Running `target/debug/fizzbuzz`
 Welcome to Solana Bootcamp - Homework 4: Fizzbuzz
 =================================================
 fizz
@@ -183,3 +187,4 @@ fizz buzz
 
 There are 20 "fizz buzz" occurred.
 ```
+</details>
