@@ -5,3 +5,5 @@ debug
 *.py
 **/*.rs.bk
 cant-touch-this
+
+test-ledger/
