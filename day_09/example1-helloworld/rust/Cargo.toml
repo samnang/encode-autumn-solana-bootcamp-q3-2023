@@ -8,9 +8,6 @@ license = "Apache-2.0"
 homepage = "https://solana.com/"
 edition = "2021"
 
-[features]
-no-entrypoint = []
-
 [dependencies]
 solana-program = "=1.16.13"
 

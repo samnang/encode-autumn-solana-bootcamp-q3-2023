@@ -8,54 +8,52 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Defines the structure of the state stored in the on-chain account
-#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, BorshSchema)]
+// Define data structure of the state stored in the on-chain account
+#[derive(BorshSerialize, BorshDeserialize, BorshSchema, Debug, Clone)]
 pub struct GreetingStruct {
     pub counter: u32,
 }
 
-// Declare and export the program's entrypoint
 entrypoint!(process_instruction);
 
-// Program entrypoint's implementation
 pub fn process_instruction(
-    program_id: &Pubkey, // Public key of the account the counter program was loaded into
-    accounts: &[AccountInfo], // The account to say hello to
-    _instruction_data: &[u8], // Ignored
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    _instruction_data: &[u8],
 ) -> ProgramResult {
-    msg!("[lib] Solana Example2 counter program entrypoint");
+    msg!("[lib] Solana counter example program");
 
-    // Iterating accounts is safer then indexing
+    // Best practices to iterating accoutns is safer than indexing
     let accounts_iter = &mut accounts.iter();
 
-    // Get the account to say hello to
-    let hello_account = next_account_info(accounts_iter)?;
+    // Get the first account from the accounts interation
+    let greeting_account = next_account_info(accounts_iter)?;
 
-    msg!("[lib] hello account: {:?}", hello_account.key);
+    msg!("[lib] counter program account: {:?}", greeting_account.key);
 
-    // The account must be owned by the program in order to modify its data
-    if hello_account.owner != program_id {
-        msg!(" Greeted account does not have the correct program id");
+    // Verify data/state account must be owned by the program in order to modify its data
+    if greeting_account.owner != program_id {
+        msg!("Greeted account does not have the correct program id");
         return Err(ProgramError::IncorrectProgramId);
     } else {
-        msg!(" Greeted account has the correct program id");
+        msg!("Greeted account has the correct program id");
     }
 
-    // Create a struct that's easy to interact with programatcially from account data
-    let mut greeting_struct = GreetingStruct::try_from_slice(&hello_account.data.borrow())?;
+    // Deserialize data from bytes into a struct instance
+    let mut greeting_struct = GreetingStruct::try_from_slice(&greeting_account.data.borrow())?;
 
-    // Increment by one
+    // increment the counter
     greeting_struct.counter += 1;
 
     msg!(
-        "Program added to the greeting counter struct stored at: {:?}",
-        hello_account.key
+        "[lib] Program added to the greeting counter account stored at: {:?}",
+        greeting_account.key
     );
 
-    // Serialise the local struct and store it back into the account
-    greeting_struct.serialize(&mut &mut hello_account.data.borrow_mut()[..])?;
+    // Serialize a struct instance into bytes to be stored on data/state account
+    greeting_struct.serialize(&mut &mut greeting_account.data.borrow_mut()[..])?;
 
-    msg!(" Greeted {} time(s)!", greeting_struct.counter);
+    msg!("Greeted {} time(s)!", greeting_struct.counter);
 
     Ok(())
 }

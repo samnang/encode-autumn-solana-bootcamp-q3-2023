@@ -1,58 +1,41 @@
-/**
- * Hello world
- */
+import path from "path";
 import {
+  PublicKey,
   Connection,
   Keypair,
-  PublicKey,
   TransactionInstruction,
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import path from "path";
 
-// utility functions that are wrappers of @solana/web3.js used throughout the project
 import {
-  getPayer,
-  establishConnection,
-  establishEnoughSol,
   checkAccountDeployed,
   checkBinaryExists,
+  establishConnection,
+  establishEnoughSol,
   getBalance,
+  getPayer,
 } from "./utils/utils";
 
-// directory with binary and keypair
 const PROGRAM_PATH = path.resolve(__dirname, "../rust/target/deploy/");
-
-// Path to program shared object file which should be deployed on chain.
-const PROGRAM_SO_PATH = path.join(PROGRAM_PATH, "helloworld.so");
-
-// Path to the keypair of the deployed program (This file is created when running `solana program deploy)
+const PROGRAM_BIN_PATH = path.join(PROGRAM_PATH, "helloworld.so");
 const PROGRAM_KEYPAIR_PATH = path.join(PROGRAM_PATH, "helloworld-keypair.json");
 
 async function main() {
-  // Get the payer for call
-  let payer: Keypair = await getPayer();
+  const payer = await getPayer(); // payer is the account who is used to submit the transaction
+  const connection = await establishConnection(); // establish the connection to the RPC cluster
 
-  // Establish connection to the cluster
-  let connection: Connection = await establishConnection();
+  await establishEnoughSol(connection, payer); // Make sure the payer has enough funds to submit the transaction otherwise requesting an airdrop
 
-  // Make sure payer has enough funds for fees and if not, top-up the account
-  await establishEnoughSol(connection, payer);
+  const [startBalanceSol, startBalanceLamport] = await getBalance(connection, payer);
 
-  // Balance after top-up
-  let [startBalanceSol, startBalanceLamport] = await getBalance(connection, payer);
+  const programId = await checkBinaryExists(PROGRAM_KEYPAIR_PATH);
 
-  // Check if binary exists (ie if it's been compiled)
-  let programID = await checkBinaryExists(PROGRAM_KEYPAIR_PATH);
+  // verify if the program has been deployed
+  if (await checkAccountDeployed(connection, programId)) {
+    await sayHello(programId, connection, payer);
 
-  // Make sure the program is deployed
-  if (await checkAccountDeployed(connection, programID)) {
-    // Say hello to an account
-    await sayHello(programID, connection, payer);
-
-    // Print balances after the call
-    let [endBalanceSol, endBalanceLamport] = await getBalance(connection, payer);
+    const [endBalanceSol, endBalanceLamport] = await getBalance(connection, payer);
 
     console.log(
       `\nIt cost:\n\t${startBalanceSol - endBalanceSol} SOL\n\t${
@@ -60,28 +43,23 @@ async function main() {
       } Lamports\nto perform the call`,
     );
   } else {
-    console.log(`\nProgram ${PROGRAM_SO_PATH} not deployed!\n`);
+    console.log(`\n Program ${PROGRAM_BIN_PATH} not deployed!\n`);
   }
 }
-/**
- *
- * @param programId
- * @param connection
- * @param payer
- * @description Send a transaction to the program to say hello
- */
+
 export async function sayHello(
   programId: PublicKey,
   connection: Connection,
   payer: Keypair,
 ): Promise<void> {
-  // Creates transaction instruction object to be passed to transaction
+  // Prepare the instruction to call to the program
   const transactionInstruction = new TransactionInstruction({
     programId: programId,
-    keys: [], // Keys unnecessary to simply log output
-    data: Buffer.alloc(0), // Program instruction data unnecessary for this program
+    keys: [],
+    data: Buffer.alloc(0),
   });
 
+  // Submit the transaction to the RPC cluster
   await sendAndConfirmTransaction(connection, new Transaction().add(transactionInstruction), [
     payer,
   ]);
