@@ -1,0 +1,6 @@
+{
+  "extends": "@tsconfig/node-lts/tsconfig.json",
+  "compilerOptions": {},
+  "include": ["client"],
+  "exclude": ["node_modules"]
+}
