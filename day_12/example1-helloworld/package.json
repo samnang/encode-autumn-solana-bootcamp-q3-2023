@@ -1,0 +1,22 @@
+{
+  "scripts": {
+    "local-node": "solana-test-validator --reset",
+    "build": "cargo build-bpf --workspace --manifest-path=./rust/Cargo.toml",
+    "deploy": "solana program deploy ./rust/target/deploy/helloworld.so",
+    "client": "ts-node client/main.ts"
+  },
+  "devDependencies": {
+    "@tsconfig/node-lts": "^18.12.5",
+    "@types/mz": "^2.7.4",
+    "@types/node": "^20.6.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.78.5",
+    "borsh": "^1.0.0",
+    "fs-extra": "^11.1.1",
+    "mz": "^2.7.0",
+    "yaml": "^2.3.2"
+  }
+}
